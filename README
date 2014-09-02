@@ -1,0 +1,31 @@
+Example JKISS pseudo random number generator implementation for Objective-C.
+Which, in becoming Swift, missed the chance for a good set of Objective NOC NOC
+jokes. Otherwise this code may be practical for e.g. games that need to "roll a
+six-sided die" or the like. The /dev/random device is used to setup the seeds,
+so at least that should not be too horrible, or you can set the seeds manually.
+
+JKISS RNG borrowed from public domain code in "Good Practice in (Pseudo)
+Random Number Generation for Bioinformatics Applications" by David Jones
+(Last revision May 7th 2010).
+
+An implementation after the various requisite manoeuvres in XCode are complete
+might run something like:
+
+  #import "JKISSprng.h"
+
+  ...
+  JKISSprng *fate = [[JKISSprng alloc] init];
+  
+  if([fate twizzleSeeds:NULL] == NO) {
+      NSLog(@"could not init JKISS seed");
+      exit(EXIT_FAILURE);
+  }
+  // or manually set the seed values (see code for things to avoid)
+  //[fate setSeedX:1 SeedY:1 SeedZ:2 SeedC:0];
+  
+  NSLog(@"32bit integer - %u", [fate randomNumber]);
+  NSLog(@"0.0 though 1.0 inclusive - %.3f", [fate randomFloat]);
+  NSLog(@"d20 - %u", [fate rollD:20]);
+
+The "rollD" method should only be used with small values, as numbers up near
+INT_MAX (2147483647) might run into modulo bias problems or other edge cases.
