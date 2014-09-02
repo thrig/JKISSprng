@@ -27,14 +27,11 @@
 
 @interface JKISSprng : NSObject
 
-{
-    // NOTE no 'getters' for these in this implementation
-    uint32_t _seedX, _seedY, _seedZ, _seedC;
-}
-
 - (unsigned int)randomNumber;
 - (double)randomFloat;
 - (int)rollD:(int)max;
+
+// must call one of these before using the above methods!
 - (void)setSeedX:(uint32_t)x
            SeedY:(uint32_t)y
            SeedZ:(uint32_t)z

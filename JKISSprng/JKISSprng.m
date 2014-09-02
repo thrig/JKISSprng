@@ -25,6 +25,15 @@
 
 #import "JKISSprng.h"
 
+@interface JKISSprng ()
+
+@property (nonatomic) uint32_t seedX;
+@property (nonatomic) uint32_t seedY;
+@property (nonatomic) uint32_t seedZ;
+@property (nonatomic) uint32_t seedC;
+
+@end
+
 @implementation JKISSprng
 
 // JKISS RNG borrowed from public domain code in "Good Practice in (Pseudo)
@@ -34,15 +43,15 @@
 {
     uint64_t t;
     
-    _seedX = 314527869 * _seedX + 1234567;
-    _seedY ^= _seedY << 5;
-    _seedY ^= _seedY >> 7;
-    _seedY ^= _seedY << 22;
-    t = 4294584393ULL * _seedZ + _seedC;
-    _seedC = t >> 32;
-    _seedZ = (uint32_t)t;
+    self.seedX = 314527869 * self.seedX + 1234567;
+    self.seedY ^= self.seedY << 5;
+    self.seedY ^= self.seedY >> 7;
+    self.seedY ^= self.seedY << 22;
+    t = 4294584393ULL * self.seedZ + self.seedC;
+    self.seedC = t >> 32;
+    self.seedZ = (uint32_t)t;
     
-    return _seedX + _seedY + _seedZ;
+    return self.seedX + self.seedY + self.seedZ;
 }
 
 // returns value between 0.0 and 1.0 inclusive
@@ -65,10 +74,10 @@
            SeedZ:(uint32_t)z
            SeedC:(uint32_t)c
 {
-    _seedX = x;
-    _seedY = y;
-    _seedZ = z;
-    _seedC = c;
+    self.seedX = x;
+    self.seedY = y;
+    self.seedZ = z;
+    self.seedC = c;
 }
 
 - (BOOL)twizzleSeeds:(NSError **)anError
@@ -86,32 +95,32 @@
         return NO;
     }
     
-    _seedX = _seedY = _seedZ = _seedC = 0;
+    self.seedX = self.seedY = self.seedZ = self.seedC = 0;
     
     uint8_t c;
-    for (int i=0; i<sizeof(_seedX); i++) {
+    for (int i=0; i<sizeof(self.seedX); i++) {
         c = fgetc(fp);
-        _seedX |= (c << (8 * i));
+        self.seedX |= (c << (8 * i));
     }
     
-    while (_seedY == 0) {
-        for (int i=0; i<sizeof(_seedY); i++) {
+    while (self.seedY == 0) {
+        for (int i=0; i<sizeof(self.seedY); i++) {
             c = fgetc(fp);
-            _seedY |= (c << (8 * i));
+            self.seedY |= (c << (8 * i));
         }
     }
     
-    for (int i=0; i<sizeof(_seedZ); i++) {
+    for (int i=0; i<sizeof(self.seedZ); i++) {
         c = fgetc(fp);
-        _seedZ |= (c << (8 * i));
+        self.seedZ |= (c << (8 * i));
     }
     
-    for (int i=0; i<sizeof(_seedC); i++) {
+    for (int i=0; i<sizeof(self.seedC); i++) {
         c = fgetc(fp);
-        _seedC |= (c << (8 * i));
+        self.seedC |= (c << (8 * i));
     }
     // offset c to avoid z=c=0
-    _seedC %= 698769068 + 1;
+    self.seedC %= 698769068 + 1;
     
     fclose(fp);
     
