@@ -35,14 +35,29 @@
 - (void)testJKISS
 {
     JKISSprng *r = [JKISSprng new];
-    [r setSeedX:1 SeedY:1 SeedZ:2 SeedC:0];
-    XCTAssertEqual((uint32_t)[r randomNumber], (uint32_t)453408695, @"random number");
-    NSString *s = [NSString stringWithFormat:@"%.2f", [r randomFloat]];
-    XCTAssertEqualObjects([s description], @"0.53", @"random float");
-    XCTAssertEqual([r rollD:20], 20, @"critical hit");
     
-    // TODO testing that randomFloat can generate 0.00 and 1.00 values
-    // might be handy, though would require an appropriate seed search.
+    BOOL result = [r setSeedX:0 SeedY:1];
+    XCTAssertEqual(result, YES, @"setSeed didn't fail");
+    
+    XCTAssertEqual([r rollD:20], 20, @"critical hit");
+    XCTAssertEqual((uint32_t)[r randomNumber], (uint32_t)2846819338, @"random number");
+    NSString *s = [NSString stringWithFormat:@"%.2f", [r randomFloat]];
+    XCTAssertEqualObjects([s description], @"0.14", @"random float");
+    
+    NSArray *menagerie = @[@"cat", @"dog", @"cuttlefish"];
+    XCTAssertEqualObjects([r randomArrayMember:menagerie], @"dog", @"random array member");
+    
+    result = [r twizzleSeeds:NULL];
+    XCTAssertEqual(result, YES, @"seed twizzle didn't fail");
+    
+    // randomFloat must span 0.0 to 1.0 inclusive, not 0.0 <= x < 1.0
+    [r setSeedX:0 SeedY:61220];
+    s = [NSString stringWithFormat:@"%.3f", [r randomFloat]];
+    XCTAssertEqualObjects([s description], @"0.000", @"zero");
+    
+    [r setSeedX:0 SeedY:3876];
+    s = [NSString stringWithFormat:@"%.3f", [r randomFloat]];
+    XCTAssertEqualObjects([s description], @"1.000", @"one");
 }
 
 @end

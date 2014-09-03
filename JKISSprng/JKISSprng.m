@@ -27,107 +27,137 @@
 
 @interface JKISSprng ()
 
-@property (nonatomic) uint32_t seedX;
-@property (nonatomic) uint32_t seedY;
-@property (nonatomic) uint32_t seedZ;
-@property (nonatomic) uint32_t seedC;
+@property (nonatomic) uint64_t seedX;
+@property (nonatomic) uint64_t seedY;
+@property (nonatomic) uint32_t seedC1;
+@property (nonatomic) uint32_t seedC2;
+@property (nonatomic) uint32_t seedZ1;
+@property (nonatomic) uint32_t seedZ2;
 
 @end
 
 @implementation JKISSprng
 
-// JKISS RNG borrowed from public domain code in "Good Practice in (Pseudo)
+- (id)randomArrayMember:(NSArray *)theAssay
+{
+    if (theAssay == nil)
+        return nil;
+    NSUInteger count = [theAssay count];
+    if (count == 0)
+        return nil;
+    return [theAssay objectAtIndex:[self randomNumber] % count];
+}
+
+// JLKISS64 RNG borrowed from public domain code in "Good Practice in (Pseudo)
 // Random Number Generation for Bioinformatics Applications" by David Jones
 // (Last revision May 7th 2010).
-- (unsigned int)randomNumber
+- (uint64_t)randomNumber
 {
     uint64_t t;
-    
-    self.seedX = 314527869 * self.seedX + 1234567;
-    self.seedY ^= self.seedY << 5;
-    self.seedY ^= self.seedY >> 7;
-    self.seedY ^= self.seedY << 22;
-    t = 4294584393ULL * self.seedZ + self.seedC;
-    self.seedC = t >> 32;
-    self.seedZ = (uint32_t)t;
-    
-    return self.seedX + self.seedY + self.seedZ;
+    self.seedX = 1490024343005336237ULL * self.seedX + 123456789;
+    self.seedY ^= self.seedY << 21;
+    self.seedY ^= self.seedY >> 17;
+    self.seedY ^= self.seedY << 30;
+    t = 4294584393ULL * self.seedZ1 + self.seedC1;
+    self.seedC1 = t >> 32;
+    self.seedZ1 = (uint32_t)t;
+    t = 4246477509ULL * self.seedZ2 + self.seedC2;
+    self.seedC2 = t >> 32;
+    self.seedZ2 = (uint32_t)t;
+    return self.seedX + self.seedY + self.seedZ1 + ((uint64_t)self.seedZ2 << 32);
 }
 
-// returns value between 0.0 and 1.0 inclusive
+// Returns value between 0.0 and 1.0 inclusive (0.0<=n<=1.0)
 - (double)randomFloat
 {
-    return [self randomNumber] / 4294967295.0;
+    return [self randomNumber] / 18446744073709551616.0;
 }
 
-// for small values where max << INT_MAX to avoid potential modulo bias
-- (int)rollD:(int)max
+// Returns value between 1 and max, inclusive; intended for small values, as
+// numbers up near UINT64_MAX should increasingly exhibit modulo bias.
+- (long)rollD:(long)max
 {
     if (max <= 0)
         return 0;
     return [self randomNumber] % max + 1;
 }
 
-// arc4random(3) might be another way to set these
-- (void)setSeedX:(uint32_t)x
-           SeedY:(uint32_t)y
-           SeedZ:(uint32_t)z
-           SeedC:(uint32_t)c
+- (BOOL)setSeedX:(uint64_t)x
+           SeedY:(uint64_t)y
 {
+    if (y == 0)
+        return NO;
+    
     self.seedX = x;
     self.seedY = y;
-    self.seedZ = z;
-    self.seedC = c;
+    
+    self.seedC1 = 6543217;
+    self.seedZ1 = 43219876;
+    self.seedC2 = 1732654;
+    self.seedZ2 = 21987643;
+    
+    return YES;
 }
 
 - (BOOL)twizzleSeeds:(NSError **)anError
 {
-    FILE *fp = fopen("/dev/random", "r");
-    
-    if (!fp) {
-        // Alternatives include raise(3) or to otherwise crash, or to
-        // fall back to arc4random(3) (which then in turn might then
-        // go try to get data from /dev/random...).
+    int fd = open("/dev/random", O_RDONLY);
+    if (fd == -1) {
+        // Alternatives include raise(3) or to otherwise crash, or to fall back
+        // to arc4random(3) (which then in turn might then go try to get data
+        // from /dev/random...)
         if (anError != NULL) {
             NSError *underlyingError = [[NSError alloc] initWithDomain:NSPOSIXErrorDomain
                                                                   code:errno userInfo:nil];
-            NSDictionary *errorDictionary = @{ NSLocalizedDescriptionKey:NSLocalizedString(@"Could not fopen(3)", @"/dev/random"), NSUnderlyingErrorKey:underlyingError, NSFilePathErrorKey:@"/dev/random" };
+            NSDictionary *errorDictionary = @{ NSLocalizedDescriptionKey:NSLocalizedString(@"Could not open(2)", @"/dev/random"), NSUnderlyingErrorKey:underlyingError, NSFilePathErrorKey:@"/dev/random" };
             *anError = [[NSError alloc] initWithDomain:NSPOSIXErrorDomain
                                                   code:errno userInfo:errorDictionary];
         }
         return NO;
     }
+
+    BOOL readResult = YES;
+    uint64_t xyval;
     
-    self.seedX = self.seedY = self.seedZ = self.seedC = 0;
-    
-    uint8_t c;
-    for (int i=0; i<sizeof(self.seedX); i++) {
-        c = fgetc(fp);
-        self.seedX |= (c << (8 * i));
+    if (read(fd, &xyval, sizeof(xyval)) != sizeof(xyval)) {
+        readResult = NO;
+        goto READFAILED;
+    } else {
+        self.seedX = xyval;
     }
-    
+
+    // Granted, if the random device is feeding back only 0s, this would
+    // loop forever; a sanity check would be to only loop N times, and
+    // failing that return NO (plus log a wtf note somewhere).
+    self.seedY = 0;
     while (self.seedY == 0) {
-        for (int i=0; i<sizeof(self.seedY); i++) {
-            c = fgetc(fp);
-            self.seedY |= (c << (8 * i));
+        if (read(fd, &xyval, sizeof(xyval)) != sizeof(xyval)) {
+            readResult = NO;
+            goto READFAILED;
+        } else {
+            self.seedY = xyval;
         }
     }
+
+    // Could also randomize these, but would need to assert that !(c1=z1=0)
+    // and likewise for the c2/z2; the entropy from X and Y should be enough,
+    // unless multitudes of simulations cause a Birthday Paradox.
+    self.seedC1 = 6543217;
+    self.seedZ1 = 43219876;
+    self.seedC2 = 1732654;
+    self.seedZ2 = 21987643;
     
-    for (int i=0; i<sizeof(self.seedZ); i++) {
-        c = fgetc(fp);
-        self.seedZ |= (c << (8 * i));
+READFAILED:
+    if (readResult == NO && anError != NULL) {
+        NSError *underlyingError = [[NSError alloc] initWithDomain:NSPOSIXErrorDomain
+                                                              code:errno userInfo:nil];
+        NSDictionary *errorDictionary = @{ NSLocalizedDescriptionKey:NSLocalizedString(@"Incomplete read(2)", @"/dev/random"), NSUnderlyingErrorKey:underlyingError, NSFilePathErrorKey:@"/dev/random" };
+        *anError = [[NSError alloc] initWithDomain:NSPOSIXErrorDomain
+                                              code:errno userInfo:errorDictionary];
     }
+    close(fd);
     
-    for (int i=0; i<sizeof(self.seedC); i++) {
-        c = fgetc(fp);
-        self.seedC |= (c << (8 * i));
-    }
-    // offset c to avoid z=c=0
-    self.seedC %= 698769068 + 1;
-    
-    fclose(fp);
-    
-    return YES;
+    return readResult;
 }
 
 @end

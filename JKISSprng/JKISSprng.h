@@ -27,15 +27,14 @@
 
 @interface JKISSprng : NSObject
 
-- (unsigned int)randomNumber;
+- (id)randomArrayMember:(NSArray *)theAssay;
+- (uint64_t)randomNumber;
 - (double)randomFloat;
-- (int)rollD:(int)max;
+- (long)rollD:(long)max;
 
 // must call one of these before using the above methods!
-- (void)setSeedX:(uint32_t)x
-           SeedY:(uint32_t)y
-           SeedZ:(uint32_t)z
-           SeedC:(uint32_t)c;
+- (BOOL)setSeedX:(uint64_t)x
+           SeedY:(uint64_t)y;               // NOTE y must not be zero
 - (BOOL)twizzleSeeds:(NSError **)anError;
 
 @end
