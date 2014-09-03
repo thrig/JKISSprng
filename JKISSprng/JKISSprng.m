@@ -85,6 +85,9 @@
     FILE *fp = fopen("/dev/random", "r");
     
     if (!fp) {
+        // Alternatives include raise(3) or to otherwise crash, or to
+        // fall back to arc4random(3) (which then in turn might then
+        // go try to get data from /dev/random...).
         if (anError != NULL) {
             NSError *underlyingError = [[NSError alloc] initWithDomain:NSPOSIXErrorDomain
                                                                   code:errno userInfo:nil];
