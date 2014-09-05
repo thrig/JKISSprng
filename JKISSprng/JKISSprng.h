@@ -30,6 +30,7 @@
 - (id)randomArrayMember:(NSArray *)theAssay;
 - (uint64_t)randomNumber;
 - (double)randomFloat;
+- (id)randomSetMember:(NSSet *)theSet;
 - (long)rollD:(long)max;
 
 // must call one of these before using the above methods!

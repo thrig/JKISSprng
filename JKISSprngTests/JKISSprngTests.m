@@ -46,7 +46,7 @@
     
     NSArray *menagerie = @[@"cat", @"dog", @"cuttlefish"];
     XCTAssertEqualObjects([r randomArrayMember:menagerie], @"dog", @"random array member");
-    
+
     result = [r twizzleSeeds:NULL];
     XCTAssertEqual(result, YES, @"seed twizzle didn't fail");
     
@@ -58,6 +58,10 @@
     [r setSeedX:0 SeedY:3876];
     s = [NSString stringWithFormat:@"%.3f", [r randomFloat]];
     XCTAssertEqualObjects([s description], @"1.000", @"one");
+    
+    [r setSeedX:0 SeedY:4];
+    NSSet *mySet = [NSSet setWithArray:menagerie];
+    XCTAssertEqualObjects([r randomSetMember:mySet], @"dog", @"set member");
 }
 
 @end

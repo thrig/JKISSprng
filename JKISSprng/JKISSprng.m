@@ -73,6 +73,24 @@
     return [self randomNumber] / 18446744073709551616.0;
 }
 
+- (id)randomSetMember:(NSSet *)theSet
+{
+    __weak JKISSprng *weakSelf = self;
+    __block id theValue;
+    __block unsigned long long i = 1;
+    
+    [theSet enumerateObjectsUsingBlock:^(id item, BOOL *stop) {
+        JKISSprng *innerSelf = weakSelf;
+        // A hopefully not botched copy of the algorithm from "The Art of
+        // Computer Programming", Volume 2, Section 3.4.2 by Donald E. Knuth.
+        if ([innerSelf randomNumber] <= UINT64_MAX / i++) {
+            theValue = item;
+        }
+    }];
+    
+    return theValue;
+}
+
 // Returns value between 1 and max, inclusive; intended for small values, as
 // numbers up near UINT64_MAX should increasingly exhibit modulo bias.
 - (long)rollD:(long)max
