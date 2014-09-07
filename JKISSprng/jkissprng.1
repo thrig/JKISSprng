@@ -1,0 +1,62 @@
+.Dd 2014-09-05
+.Dt jkissprng 1
+.Os Darwin
+.Sh NAME
+.Nm jkissprng
+.Nd generates output from JKISSprng
+.Sh SYNOPSIS
+.Nm
+.Op Fl c Ar count
+.Op Fl R Ar reseedcount
+.Op Fl X Ar seed
+.Op Fl Y Ar seed
+.Ar method
+.Op Ar methodargs
+.Sh DESCRIPTION
+.Nm
+generates output from various JKISSprng methods to the standard output stream,
+presumably for statistical analysis with high enough counts. Global options:
+.Bl -tag -width -indent
+.It Fl c Ar count
+Number of times to call the JKISSprng method, by default once.
+.It Fl R Ar reseedcount
+Optional count at which JKISSprng will be re-seeded with a new random seed.
+This option is disabled by default, meaning that the same seed will be used
+for all the method calls. Ignored if
+.Fl Y
+is set.
+.It Fl X Ar seed
+Seeds the PRNG with the specific value for the X seed. Optional, defaults to
+zero. Accepts the range of a 64-bit unsigned integer.
+.It Fl Y Ar seed
+Seeds the PRNG with the specific value for the Y seed. Optional, though cannot
+be zero. Minus zero it accepts the range of a 64-bit unsigned integer.
+.El
+.Pp
+A method name from JKISSprng is necessary; some methods also take options
+as necessary.
+.Sh METHODS
+.Bl -tag -width -indent
+.It randomArrayMember Ar file|-
+Returns random element(s) of a NSArray composed from lines of the file
+listed, or failing that or if the filename is a hyphen, the lines from
+standard input. The data is assumed to use the UTF8 encoding.
+.It randomFloat Ar precision
+Returns random floating point number(s) between 0.0 and 1.0 inclusive. An
+optional precision specifies how many digits beyond the decimal will be
+printed, by default 4.
+.It randomNumber
+Returns random integer(s) in the range of 1 to UINT64_MAX.
+.It randomSetMember Ar file|-
+Returns random element(s) of a NSSet composed from lines of the file listed,
+or failing that or if the filename is a hyphen, the lines from standard
+input. The data is assumed to use the UTF8 encoding.
+.It rollD Ar rollmax
+Returns random integer(s) in the range of 1 to
+.Ar rollmax .
+This option should be 2 or higher.
+.El
+.Sh EXIT STATUS
+.Ex -std jkissprng
+.Sh AUTHOR
+.An Jeremy Mates

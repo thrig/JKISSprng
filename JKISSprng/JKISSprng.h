@@ -1,6 +1,6 @@
 //
 //  JKISSprng.h
-//  JKISSprng
+//  JKISSprng - pseudo random number generator implementation for Objective-C
 //
 //  Copyright (c) 2014 Jeremy Mates. All rights reserved.
 //

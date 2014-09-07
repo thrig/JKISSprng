@@ -32,4 +32,5 @@ might run something like:
 The "rollD" method should only be used with small values, as numbers up near
 the maximum might run into modulo bias problems or other edge cases, test and
 find out if this will be a concern. There are also methods that pull random
-elements from a NSArray or NSSet.
+elements from a NSArray or NSSet. The included jkissprng(1) utility may also
+be of use.
