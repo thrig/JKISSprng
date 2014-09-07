@@ -3,13 +3,12 @@
 # ZSH completion for the jkissprng utility. Install to a $fpath directory.
 
 _jkissprng() {
-  _arguments -s \
+  _arguments -s -S \
     '(- *)-h[emit help and exit]' \
-    '-c=[count of times to call method]' \
-    '(-X -Y)-R=[count at which to reseed PRNG]' \
-    '-R=[count at which to reseed PRNG]' \
-    '(-R)-X=[custom value for X seed]' \
-    '(-R)-Y=[custom value for Y seed]' \
+    '(-h)-c+[count of times to call method]:count:(10 1000 100000)' \
+    '(-h -X -Y)-R+[count at which to reseed PRNG]:count:(5 500 50000)' \
+    '(-h -R)-X+[custom value for X seed]:integer:' \
+    '(-h -R)-Y+[custom value for Y seed]:integer:' \
     '*::jkissprng method:_jkissprng_methods'
 }
 
@@ -23,7 +22,7 @@ _jkissprng_methods() {
   )
 
   if (( CURRENT == 1 )); then
-    _describe -t commands 'jkissprng methodxx' _jkissprng_methods
+    _describe -t commands 'jkissprng method' _jkissprng_methods
   else
     local curcontext="$curcontext"
 
@@ -38,6 +37,8 @@ _jkissprng_methods() {
   fi
 }
 
+# TODO though really "filename" is a file, hyphen, or nothing at all, though
+# "will there be input from stdin" might be a hard quesation to answer.
 _jkissprng_randomArrayMember() { _files }
 _jkissprng_randomFloat() {
   local prec
