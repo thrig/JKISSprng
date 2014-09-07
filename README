@@ -26,6 +26,7 @@ might run something like:
   //[fate setSeedX:1 SeedY:1 SeedZ:2 SeedC:0];
   
   NSLog(@"32bit integer - %u", [fate randomNumber]);
+  // TODO randomFloat biased, see below
   NSLog(@"0.0 though 1.0 inclusive - %.3f", [fate randomFloat]);
   NSLog(@"d20 - %u", [fate rollD:20]);
 
@@ -34,3 +35,22 @@ the maximum might run into modulo bias problems or other edge cases, test and
 find out if this will be a concern. There are also methods that pull random
 elements from a NSArray or NSSet. The included jkissprng(1) utility may also
 be of use.
+
+
+STATISTICAL TESTS
+
+ * randomFloat shows bias for 0.00 and 1.00; these are half as likely as the
+   other "%.2f" formatted randomFloat results, whoops!
+
+   $ jkissprng -c100000 randomFloat 2 \
+     | perl -nle '$s{$_}++; END { print "$_ $s{$_}" for keys %s }' > freq
+   $ R
+   > stuff=read.table("freq"); plot(stuff)
+
+ * randomArrayMember, randomSetMember, rollD (for small rolls, e.g. 6 or 20 or
+   100) show no obvious bias via eyeballing the plot() though this will need
+   better confirmation than that.
+
+   $ perl -E 'say for 1..20' \
+     | jkissprng -R 5000 -c 1000000 randomArrayMember \
+     | perl -nle '$s{$_}++; END { print "$_ $s{$_}" for keys %s }' > freq
