@@ -26,7 +26,8 @@ might run something like:
   //[fate setSeedX:1 SeedY:1 SeedZ:2 SeedC:0];
   
   NSLog(@"32bit integer - %u", [fate randomNumber]);
-  // TODO randomFloat biased, see below
+  // Note that formats that round randomFloat diminish the odds for 0.0 or
+  // 1.0, see below
   NSLog(@"0.0 though 1.0 inclusive - %.3f", [fate randomFloat]);
   NSLog(@"d20 - %u", [fate rollD:20]);
 
@@ -39,13 +40,19 @@ be of use.
 
 STATISTICAL TESTS
 
- * randomFloat shows bias for 0.00 and 1.00; these are half as likely as the
-   other "%.2f" formatted randomFloat results, whoops!
+ * randomFloat shows bias away from 0.00 and 1.00; these are half as likely
+   as the other "%.2f" formatted randomFloat results. I believe this is an
+   artifact of the printf rounding, as 0.00 and 1.00 can only be rounded to
+   from half as many numbers as the rest of the numbers in the interior of
+   the series.
 
-   $ jkissprng -c100000 randomFloat 2 \
-     | perl -nle '$s{$_}++; END { print "$_ $s{$_}" for keys %s }' > freq
-   $ R
-   > stuff=read.table("freq"); plot(stuff)
+     $ jkissprng -c100000 randomFloat 2 \
+       | perl -nle '$s{$_}++; END { print "$_ $s{$_}" for keys %s }' > freq
+     $ R
+     > stuff=read.table("freq"); plot(stuff)
+
+   Using randomFloat directly should be fine; running the result through a
+   rounding function first should not be fine.
 
  * randomArrayMember, randomSetMember, rollD (for small rolls, e.g. 6 or 20 or
    100) show no obvious bias via eyeballing the plot() though this will need
