@@ -44,7 +44,8 @@ standard input. The data is assumed to use the UTF8 encoding.
 .It randomFloat Ar precision
 Returns random floating point number(s) between 0.0 and 1.0 inclusive. An
 optional precision specifies how many digits beyond the decimal will be
-printed, by default 4.
+printed, by default 4. Note that rounding will decrease the odds of exactly
+0 and 1 by half compared to the other numbers.
 .It randomNumber
 Returns random integer(s) in the range of 1 to UINT64_MAX.
 .It randomSetMember Ar file|-
