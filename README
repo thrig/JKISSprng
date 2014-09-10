@@ -41,18 +41,27 @@ be of use.
 STATISTICAL TESTS
 
  * randomFloat shows bias away from 0.00 and 1.00; these are half as likely
-   as the other "%.2f" formatted randomFloat results. I believe this is an
-   artifact of the printf rounding, as 0.00 and 1.00 can only be rounded to
-   from half as many numbers as the rest of the numbers in the interior of
-   the series.
+   as the other "%.2f" formatted randomFloat results.
 
-     $ jkissprng -c100000 randomFloat 2 \
-       | perl -nle '$s{$_}++; END { print "$_ $s{$_}" for keys %s }' > freq
+     $ jkissprng -c100000 randomFloat 2 > freq
      $ R
-     > stuff=read.table("freq"); plot(stuff)
+     > stuff=read.table("freq")
+     > tab=table(stuff)
+     > barplot(tab)
+     > chisq.test(tab, p=rep(1/length(tab), length(tab)))
+     
+             Chi-squared test for given probabilities
+     
+     data:  tab
+     X-squared = 548.3603, df = 100, p-value < 2.2e-16
+     
+     > 
 
-   Using randomFloat directly should be fine; running the result through a
-   rounding function first should not be fine.
+   I believe this is an artifact of the printf rounding, as 0.00 and 1.00 can
+   only be rounded to from half as many numbers as the rest of the numbers in
+   the interior of the series. Using randomFloat directly should be fine;
+   running the result through a rounding function first will introduce bias
+   unfavorable to 0.00 and 1.00.
 
  * randomArrayMember, randomSetMember, rollD (for small rolls, e.g. 6 or 20 or
    100) show no obvious bias via eyeballing the plot() though this will need
