@@ -98,7 +98,7 @@ int main(int argc, const char * argv[])
         
         NSString *methodName = [[NSString alloc] initWithCString:*argv++
                                                         encoding:NSUTF8StringEncoding];
-        char *linep;
+        char *linep = NULL;
         const char *fname;
         FILE *fh;
         size_t len = 0;
