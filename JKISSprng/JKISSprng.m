@@ -67,7 +67,9 @@
     return self.seedX + self.seedY + self.seedZ1 + ((uint64_t)self.seedZ2 << 32);
 }
 
-// Returns value between 0.0 and 1.0 inclusive (0.0<=n<=1.0)
+// Returns value between 0.0 and 1.0 inclusive (0.0<=n<=1.0); probably should
+// be renamed "randomDouble". An alternative might be something like:
+//  return ldexp((double) [self randomNumber], -64);
 - (double)randomFloat
 {
     return [self randomNumber] / 18446744073709551616.0;
