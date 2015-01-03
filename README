@@ -1,5 +1,5 @@
 Example JKISS pseudo random number generator implementation for Objective-C.
-Which, in becoming Swift, missed the chance for a good set of Objective NOC NOC
+Which, becoming Swift, missed the chance for a good set of Objective NOC NOC
 jokes. Otherwise this code may be practical for e.g. games that need to "roll a
 six-sided die" or the like. The /dev/random device is used to setup the seeds,
 so at least that should not be too horrible, or you can set the seeds manually.
@@ -32,10 +32,20 @@ might run something like:
   NSLog(@"d20 - %u", [fate rollD:20]);
 
 The "rollD" method should only be used with small values, as numbers up near
-the maximum might run into modulo bias problems or other edge cases, test and
+the maximum might run into modulo bias problems or other edge cases; test and
 find out if this will be a concern. There are also methods that pull random
 elements from a NSArray or NSSet. The included jkissprng(1) utility may also
 be of use.
+
+
+ADDING ENTROPY
+
+The PRNG will march through the progression dictated by the seed variables; one
+way to fiddle with these over time is via a timer; see the randtimertest/
+directory for sample code that might be adapted to change one of the random
+seeds over time. This will not suit games that need a reproducible seed for one
+reason or another, for example tournaments, though may otherwise increase
+randomization.
 
 
 STATISTICAL TESTS
@@ -64,9 +74,24 @@ STATISTICAL TESTS
    unfavorable to 0.00 and 1.00.
 
  * randomArrayMember, randomSetMember, rollD (for small rolls, e.g. 6 or 20 or
-   100) show no obvious bias via eyeballing the plot() though this will need
-   better confirmation than that.
+   100) show no obvious bias via eyeballing the plot() in R though this will
+   need better confirmation than that. Twenty values, picking random member:
 
-   $ perl -E 'say for 1..20' \
-     | jkissprng -R 5000 -c 1000000 randomArrayMember \
-     | perl -nle '$s{$_}++; END { print "$_ $s{$_}" for keys %s }' > freq
+     % perl -E 'say for 1..20' \
+       | jkissprng -R 5000 -c 1000000 randomArrayMember | r-fu equichisq 
+
+             Chi-squared test for given probabilities
+     
+     data:  tab
+     X-squared = 17.7504, df = 19, p-value = 0.5392
+
+ * Adding entropy via a periodic timer is an okay source on a Mac OS X laptop
+   using NSTimer and pulling the LSB off of the gettimeofday(2) tv_usec value,
+   for an otherwise idle laptop on AC power:
+
+             Chi-squared test for given probabilities
+  
+     data:  tab
+     X-squared = 239.7096, df = 255, p-value = 0.7458
+
+   Though, test, YMMV, etc.
