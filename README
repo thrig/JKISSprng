@@ -64,8 +64,6 @@ STATISTICAL TESTS
      
      data:  tab
      X-squared = 548.3603, df = 100, p-value < 2.2e-16
-     
-     > 
 
    I believe this is an artifact of the printf rounding, as 0.00 and 1.00 can
    only be rounded to from half as many numbers as the rest of the numbers in
@@ -89,6 +87,8 @@ STATISTICAL TESTS
    using NSTimer and pulling the LSB off of the gettimeofday(2) tv_usec value,
    for an otherwise idle laptop on AC power:
 
+     [1] "elements 19152 unique 256"
+     
              Chi-squared test for given probabilities
   
      data:  tab
