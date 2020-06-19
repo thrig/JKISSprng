@@ -88,7 +88,7 @@ int main(int argc, const char * argv[])
             Flag_Reseed = 0;
         } else {
             if ([fate twizzleSeeds:NULL] == NO)
-                errx(EX_OSERR, "could not set seed from /dev/random ??");
+                errx(EX_OSERR, "could not set seed from /dev/urandom ??");
         }
 
         if (Flag_Count == 0)
@@ -192,7 +192,7 @@ int main(int argc, const char * argv[])
             
             if (Flag_Reseed != 0 && i % Flag_Reseed == 0) {
                 if ([fate twizzleSeeds:NULL] == NO)
-                    errx(EX_OSERR, "could not set seed from /dev/random ??");
+                    errx(EX_OSERR, "could not set seed from /dev/urandom ??");
             }
         }
     }

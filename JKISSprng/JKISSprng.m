@@ -121,15 +121,15 @@
 
 - (BOOL)twizzleSeeds:(NSError **)anError
 {
-    int fd = open("/dev/random", O_RDONLY);
+    int fd = open("/dev/urandom", O_RDONLY);
     if (fd == -1) {
         // Alternatives include raise(3) or to otherwise crash, or to fall back
         // to arc4random(3) (which then in turn might then go try to get data
-        // from /dev/random...)
+        // from /dev/urandom...)
         if (anError != NULL) {
             NSError *underlyingError = [[NSError alloc] initWithDomain:NSPOSIXErrorDomain
                                                                   code:errno userInfo:nil];
-            NSDictionary *errorDictionary = @{ NSLocalizedDescriptionKey:NSLocalizedString(@"Could not open(2)", @"/dev/random"), NSUnderlyingErrorKey:underlyingError, NSFilePathErrorKey:@"/dev/random" };
+            NSDictionary *errorDictionary = @{ NSLocalizedDescriptionKey:NSLocalizedString(@"Could not open(2)", @"/dev/urandom"), NSUnderlyingErrorKey:underlyingError, NSFilePathErrorKey:@"/dev/urandom" };
             *anError = [[NSError alloc] initWithDomain:NSPOSIXErrorDomain
                                                   code:errno userInfo:errorDictionary];
         }
@@ -171,7 +171,7 @@ READFAILED:
     if (readResult == NO && anError != NULL) {
         NSError *underlyingError = [[NSError alloc] initWithDomain:NSPOSIXErrorDomain
                                                               code:errno userInfo:nil];
-        NSDictionary *errorDictionary = @{ NSLocalizedDescriptionKey:NSLocalizedString(@"Incomplete read(2)", @"/dev/random"), NSUnderlyingErrorKey:underlyingError, NSFilePathErrorKey:@"/dev/random" };
+        NSDictionary *errorDictionary = @{ NSLocalizedDescriptionKey:NSLocalizedString(@"Incomplete read(2)", @"/dev/urandom"), NSUnderlyingErrorKey:underlyingError, NSFilePathErrorKey:@"/dev/urandom" };
         *anError = [[NSError alloc] initWithDomain:NSPOSIXErrorDomain
                                               code:errno userInfo:errorDictionary];
     }
